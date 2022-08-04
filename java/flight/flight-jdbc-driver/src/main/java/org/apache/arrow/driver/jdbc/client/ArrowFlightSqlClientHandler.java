@@ -55,6 +55,7 @@ import org.apache.calcite.avatica.Meta.StatementType;
  */
 public final class ArrowFlightSqlClientHandler implements AutoCloseable {
 
+  private final ConnectionFactory factory;
   private final FlightSqlClient sqlClient;
   private final Set<CallOption> options = new HashSet<>();
 
@@ -62,10 +63,9 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
       final ConnectionFactory factory,
       final Collection<CallOption> options
   ) throws SQLException {
-    FlightClient client = factory.build();
+    this.factory = Preconditions.checkNotNull(factory);
+    this.sqlClient = new FlightSqlClient(factory.build());
     this.options.addAll(options);
-    FlightSqlClient sqlClient = new FlightSqlClient(client);
-    this.sqlClient = Preconditions.checkNotNull(sqlClient);
   }
 
   /**
