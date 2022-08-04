@@ -25,7 +25,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.net.URI;
 
 import org.apache.arrow.driver.jdbc.client.utils.ClientAuthenticationUtils;
 import org.apache.arrow.flight.CallOption;
@@ -50,6 +51,9 @@ import org.apache.arrow.util.Preconditions;
 import org.apache.arrow.vector.types.pojo.Schema;
 import org.apache.calcite.avatica.Meta.StatementType;
 
+import static org.apache.arrow.flight.LocationSchemes.GRPC_INSECURE;
+import static org.apache.arrow.flight.LocationSchemes.GRPC_TLS;
+
 /**
  * A {@link FlightSqlClient} handler.
  */
@@ -64,14 +68,14 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
       final Collection<CallOption> options
   ) throws SQLException {
     this.factory = Preconditions.checkNotNull(factory);
-    this.sqlClient = new FlightSqlClient(factory.build());
+    this.sqlClient = factory.createConnection(null);
     this.options.addAll(options);
   }
 
   /**
    * Creates a new {@link ArrowFlightSqlClientHandler} from the provided {@code client} and {@code options}.
    *
-   * @param client  the {@link FlightClient} to manage under a {@link FlightSqlClient} wrapper.
+   * @param factory the {@link ConnectionFactory} to create {@link FlightSqlClient}s.
    * @param options the {@link CallOption}s to persist in between subsequent client calls.
    * @return a new {@link ArrowFlightSqlClientHandler}.
    */
@@ -98,11 +102,14 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
    * @param flightInfo The {@link FlightInfo} instance from which to fetch results.
    * @return a {@code FlightStream} of results.
    */
-  public List<FlightStream> getStreams(final FlightInfo flightInfo) {
-    return flightInfo.getEndpoints().stream()
-        .map(FlightEndpoint::getTicket)
-        .map(ticket -> sqlClient.getStream(ticket, getOptions()))
-        .collect(Collectors.toList());
+  public List<FlightStream> getStreams(final FlightInfo flightInfo) throws SQLException {
+      ArrayList<org.apache.arrow.flight.FlightStream> streams = new java.util.ArrayList<>();
+      for (FlightEndpoint ep : flightInfo.getEndpoints()) {
+        URI uri = ep.getLocations().isEmpty() ? null : ep.getLocations().get(0).getUri();
+        FlightSqlClient sqlClient = this.factory.createConnection(uri);
+        streams.add(sqlClient.getStream(ep.getTicket(), getOptions()));
+      }
+      return streams;
   }
 
   /**
@@ -547,9 +554,19 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
       this.config = config;
     }
 
-    public FlightClient build() throws SQLException {
+    public FlightSqlClient createConnection(URI uri) throws SQLException {
       FlightClient client = null;
       try {
+        // Use default parameters if no URI provided
+        if (uri == null) {
+          String scheme = config.useEncryption ? GRPC_TLS : GRPC_INSECURE;
+          uri = new URI(String.format("%s://%s:%d", scheme, config.host, config.port));
+        }
+  
+        // Create a new connection and add it to the map
+        String host = uri.getHost();
+        int port = uri.getPort();
+        boolean useEncryption = GRPC_TLS.equals(uri.getScheme());
         ClientIncomingAuthHeaderMiddleware.Factory authFactory = null;
         if (config.username != null) {
           authFactory =
@@ -591,9 +608,11 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
               ClientAuthenticationUtils.getAuthenticate(
                   client, new CredentialCallOption(new BearerCredentialWriter(config.token))));
         }
-        return client;
+        FlightSqlClient sqlClient = new FlightSqlClient(client);
+        return sqlClient;
 
-      } catch (final IllegalArgumentException | GeneralSecurityException | IOException | FlightRuntimeException e) {
+      } catch (final IllegalArgumentException | GeneralSecurityException | IOException | FlightRuntimeException |
+                     java.net.URISyntaxException e) {
         final SQLException originalException = new SQLException(e);
         if (client != null) {
           try {
