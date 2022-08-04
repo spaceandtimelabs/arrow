@@ -18,17 +18,12 @@
 package org.apache.arrow.driver.jdbc.client;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.GeneralSecurityException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -54,9 +49,6 @@ import org.apache.arrow.util.AutoCloseables;
 import org.apache.arrow.util.Preconditions;
 import org.apache.arrow.vector.types.pojo.Schema;
 import org.apache.calcite.avatica.Meta.StatementType;
-
-import static org.apache.arrow.flight.LocationSchemes.GRPC_INSECURE;
-import static org.apache.arrow.flight.LocationSchemes.GRPC_TLS;
 
 /**
  * A {@link FlightSqlClient} handler.
@@ -342,7 +334,7 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
 
   /**
    * Config options shared by both the {@link ArrowFlightSqlClientHandler.Builder}
-   * and the {@link ArrowFlightSqlClientHandler.ConnectionManager}.
+   * and the {@link ConnectionFactory}.
    */
   static class Config {
     protected final Set<FlightClientMiddleware.Factory> middlewareFactories = new HashSet<>();
@@ -537,66 +529,69 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @throws SQLException on error.
      */
     public ArrowFlightSqlClientHandler build() throws SQLException {
-      return ArrowFlightSqlClientHandler.build(config);
+      FlightClient client = ConnectionFactory.build(config);
+      return ArrowFlightSqlClientHandler.createNewHandler(client, config.options);
     }
   }
 
-  public static ArrowFlightSqlClientHandler build(Config config) throws SQLException {
-    FlightClient client = null;
-    try {
-      ClientIncomingAuthHeaderMiddleware.Factory authFactory = null;
-      if (config.username != null) {
-        authFactory =
-            new ClientIncomingAuthHeaderMiddleware.Factory(new ClientBearerHeaderHandler());
-        config.middlewareFactories.add(authFactory);
-      }
-      final FlightClient.Builder clientBuilder = FlightClient.builder().allocator(config.allocator);
-      config.middlewareFactories.add(new ClientCookieMiddleware.Factory());
-      config.middlewareFactories.forEach(clientBuilder::intercept);
-      Location location;
-      if (config.useEncryption) {
-        location = Location.forGrpcTls(config.host, config.port);
-        clientBuilder.useTls();
-      } else {
-        location = Location.forGrpcInsecure(config.host, config.port);
-      }
-      clientBuilder.location(location);
-
-      if (config.useEncryption) {
-        if (config.disableCertificateVerification) {
-          clientBuilder.verifyServer(false);
+  static class ConnectionFactory {
+    public static FlightClient build(Config config) throws SQLException {
+      FlightClient client = null;
+      try {
+        ClientIncomingAuthHeaderMiddleware.Factory authFactory = null;
+        if (config.username != null) {
+          authFactory =
+              new ClientIncomingAuthHeaderMiddleware.Factory(new ClientBearerHeaderHandler());
+          config.middlewareFactories.add(authFactory);
+        }
+        final FlightClient.Builder clientBuilder = FlightClient.builder().allocator(config.allocator);
+        config.middlewareFactories.add(new ClientCookieMiddleware.Factory());
+        config.middlewareFactories.forEach(clientBuilder::intercept);
+        Location location;
+        if (config.useEncryption) {
+          location = Location.forGrpcTls(config.host, config.port);
+          clientBuilder.useTls();
         } else {
-          if (config.useSystemTrustStore) {
-            clientBuilder.trustedCertificates(
-                ClientAuthenticationUtils.getCertificateInputStreamFromSystem(config.trustStorePassword));
-          } else if (config.trustStorePath != null) {
-            clientBuilder.trustedCertificates(
-                ClientAuthenticationUtils.getCertificateStream(config.trustStorePath, config.trustStorePassword));
+          location = Location.forGrpcInsecure(config.host, config.port);
+        }
+        clientBuilder.location(location);
+
+        if (config.useEncryption) {
+          if (config.disableCertificateVerification) {
+            clientBuilder.verifyServer(false);
+          } else {
+            if (config.useSystemTrustStore) {
+              clientBuilder.trustedCertificates(
+                  ClientAuthenticationUtils.getCertificateInputStreamFromSystem(config.trustStorePassword));
+            } else if (config.trustStorePath != null) {
+              clientBuilder.trustedCertificates(
+                  ClientAuthenticationUtils.getCertificateStream(config.trustStorePath, config.trustStorePassword));
+            }
           }
         }
-      }
 
-      client = clientBuilder.build();
-      if (authFactory != null) {
-        config.options.add(
-            ClientAuthenticationUtils.getAuthenticate(client, config.username, config.password, authFactory));
-      } else if (config.token != null) {
-        config.options.add(
-            ClientAuthenticationUtils.getAuthenticate(
-                client, new CredentialCallOption(new BearerCredentialWriter(config.token))));
-      }
-      return ArrowFlightSqlClientHandler.createNewHandler(client, config.options);
-
-    } catch (final IllegalArgumentException | GeneralSecurityException | IOException | FlightRuntimeException e) {
-      final SQLException originalException = new SQLException(e);
-      if (client != null) {
-        try {
-          client.close();
-        } catch (final InterruptedException interruptedException) {
-          originalException.addSuppressed(interruptedException);
+        client = clientBuilder.build();
+        if (authFactory != null) {
+          config.options.add(
+              ClientAuthenticationUtils.getAuthenticate(client, config.username, config.password, authFactory));
+        } else if (config.token != null) {
+          config.options.add(
+              ClientAuthenticationUtils.getAuthenticate(
+                  client, new CredentialCallOption(new BearerCredentialWriter(config.token))));
         }
+        return client;
+
+      } catch (final IllegalArgumentException | GeneralSecurityException | IOException | FlightRuntimeException e) {
+        final SQLException originalException = new SQLException(e);
+        if (client != null) {
+          try {
+            client.close();
+          } catch (final InterruptedException interruptedException) {
+            originalException.addSuppressed(interruptedException);
+          }
+        }
+        throw originalException;
       }
-      throw originalException;
     }
   }
 }
