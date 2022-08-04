@@ -106,8 +106,10 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
       ArrayList<org.apache.arrow.flight.FlightStream> streams = new java.util.ArrayList<>();
       for (FlightEndpoint ep : flightInfo.getEndpoints()) {
         URI uri = ep.getLocations().isEmpty() ? null : ep.getLocations().get(0).getUri();
+        System.out.println(String.format("Getting stream %s", uri)); // TODO: remove
         FlightSqlClient sqlClient = this.factory.createConnection(uri);
-        streams.add(sqlClient.getStream(ep.getTicket(), getOptions()));
+        FlightStream stream = sqlClient.getStream(ep.getTicket(), getOptions()); // TODO: wrap and close client
+        streams.add(stream);
       }
       return streams;
   }
@@ -555,12 +557,20 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
     }
 
     public FlightSqlClient createConnection(URI uri) throws SQLException {
+      final Set<FlightClientMiddleware.Factory> middlewareFactories = new HashSet<>();
+      middlewareFactories.addAll(config.middlewareFactories);
       FlightClient client = null;
+      String username = config.username;
+      String password = config.password;
       try {
         // Use default parameters if no URI provided
         if (uri == null) {
           String scheme = config.useEncryption ? GRPC_TLS : GRPC_INSECURE;
           uri = new URI(String.format("%s://%s:%d", scheme, config.host, config.port));
+        } else {
+          // TODO: use same auth for both executors and scheduler
+          username = null;
+          password = null;
         }
   
         // Create a new connection and add it to the map
@@ -568,24 +578,24 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
         int port = uri.getPort();
         boolean useEncryption = GRPC_TLS.equals(uri.getScheme());
         ClientIncomingAuthHeaderMiddleware.Factory authFactory = null;
-        if (config.username != null) {
+        if (username != null) {
           authFactory =
               new ClientIncomingAuthHeaderMiddleware.Factory(new ClientBearerHeaderHandler());
-          config.middlewareFactories.add(authFactory);
+          middlewareFactories.add(authFactory);
         }
         final FlightClient.Builder clientBuilder = FlightClient.builder().allocator(config.allocator);
-        config.middlewareFactories.add(new ClientCookieMiddleware.Factory());
-        config.middlewareFactories.forEach(clientBuilder::intercept);
+        middlewareFactories.add(new ClientCookieMiddleware.Factory());
+        middlewareFactories.forEach(clientBuilder::intercept);
         Location location;
         if (config.useEncryption) {
-          location = Location.forGrpcTls(config.host, config.port);
+          location = Location.forGrpcTls(host, port);
           clientBuilder.useTls();
         } else {
-          location = Location.forGrpcInsecure(config.host, config.port);
+          location = Location.forGrpcInsecure(host, port);
         }
         clientBuilder.location(location);
 
-        if (config.useEncryption) {
+        if (useEncryption) {
           if (config.disableCertificateVerification) {
             clientBuilder.verifyServer(false);
           } else {
@@ -602,7 +612,7 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
         client = clientBuilder.build();
         if (authFactory != null) {
           config.options.add(
-              ClientAuthenticationUtils.getAuthenticate(client, config.username, config.password, authFactory));
+              ClientAuthenticationUtils.getAuthenticate(client, username, password, authFactory));
         } else if (config.token != null) {
           config.options.add(
               ClientAuthenticationUtils.getAuthenticate(
