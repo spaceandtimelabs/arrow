@@ -58,9 +58,10 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
   private final FlightSqlClient sqlClient;
   private final Set<CallOption> options = new HashSet<>();
 
-  ArrowFlightSqlClientHandler(final FlightSqlClient sqlClient,
+  ArrowFlightSqlClientHandler(final FlightClient client,
                               final Collection<CallOption> options) {
     this.options.addAll(options);
+    FlightSqlClient sqlClient = new FlightSqlClient(client);
     this.sqlClient = Preconditions.checkNotNull(sqlClient);
   }
 
@@ -76,7 +77,7 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
       final Collection<CallOption> options
   ) throws SQLException {
     FlightClient client = factory.build();
-    return new ArrowFlightSqlClientHandler(new FlightSqlClient(client), options);
+    return new ArrowFlightSqlClientHandler(client, options);
   }
 
   /**
