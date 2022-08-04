@@ -71,8 +71,11 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
    * @param options the {@link CallOption}s to persist in between subsequent client calls.
    * @return a new {@link ArrowFlightSqlClientHandler}.
    */
-  public static ArrowFlightSqlClientHandler createNewHandler(final FlightClient client,
-                                                             final Collection<CallOption> options) {
+  public static ArrowFlightSqlClientHandler createNewHandler(
+      final ConnectionFactory factory,
+      final Collection<CallOption> options
+  ) throws SQLException {
+    FlightClient client = factory.build();
     return new ArrowFlightSqlClientHandler(new FlightSqlClient(client), options);
   }
 
@@ -529,13 +532,19 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @throws SQLException on error.
      */
     public ArrowFlightSqlClientHandler build() throws SQLException {
-      FlightClient client = ConnectionFactory.build(config);
-      return ArrowFlightSqlClientHandler.createNewHandler(client, config.options);
+      ConnectionFactory factory = new ConnectionFactory(config);
+      return ArrowFlightSqlClientHandler.createNewHandler(factory, config.options);
     }
   }
 
   static class ConnectionFactory {
-    public static FlightClient build(Config config) throws SQLException {
+    final Config config;
+
+    public ConnectionFactory(Config config) {
+      this.config = config;
+    }
+
+    public FlightClient build() throws SQLException {
       FlightClient client = null;
       try {
         ClientIncomingAuthHeaderMiddleware.Factory authFactory = null;
