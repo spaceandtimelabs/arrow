@@ -90,12 +90,14 @@ public class ArrowFlightJdbcDriverTest {
     int updateCount = stmt.getUpdateCount();
     assertEquals(updateCount, 0);
 
-    sql = "select top 1 * from customer";
+    sql = "select c_name from customer order by c_name limit 1";
     result = stmt.execute(sql);
     assertEquals(result, true);
     java.sql.ResultSet rs = stmt.getResultSet();
     int count = 0;
     while(rs.next()) {
+      String key = rs.getString(1);
+      assertEquals(key, "Customer#000000002");
       count++;
     }
     assertEquals(count, 1);
