@@ -10,9 +10,13 @@ jobs:
       - image: maven:3.8.6-jdk-8
     steps:
       - checkout
-      - run: cd java && mvn install -DskipTests -Dcheckstyle.skip -Drat.skip=true
+      - run: |
+        cd java
+        mvn install -DskipTests -Dcheckstyle.skip -Drat.skip=true
+        mkdir -p artifacts
+        mv java/flight/flight-jdbc-driver/target/flight-jdbc-driver-*-SNAPSHOT.jar artifacts/
       - store_artifacts:
-          path: java/flight/flight-jdbc-driver/target/
+          path: java/artifacts
 
 workflows:
   maven_package:
