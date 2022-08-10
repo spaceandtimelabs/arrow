@@ -27,6 +27,7 @@ jobs:
 workflows:
   maven_package:
     jobs:
+      - build
       - test:
           requires:
             - build
