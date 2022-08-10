@@ -11,10 +11,10 @@ jobs:
     steps:
       - checkout
       - run: |
-        cd java
-        mvn install -DskipTests -Dcheckstyle.skip -Drat.skip=true
-        mkdir -p artifacts
-        mv java/flight/flight-jdbc-driver/target/flight-jdbc-driver-*-SNAPSHOT.jar artifacts/
+          cd java
+          mvn install -DskipTests -Dcheckstyle.skip -Drat.skip=true
+          mkdir -p artifacts
+          mv java/flight/flight-jdbc-driver/target/flight-jdbc-driver-*-SNAPSHOT.jar artifacts/
       - store_artifacts:
           path: java/artifacts
 
