@@ -14,11 +14,7 @@ jobs:
           cd java
           mvn install -DskipTests -Dcheckstyle.skip -Drat.skip=true
           mkdir -p artifacts
-          echo "list dir"
-          ls -l java/flight/flight-jdbc-driver/target/
-          echo "list file"
-          ls -l java/flight/flight-jdbc-driver/target/flight-jdbc-driver-*-SNAPSHOT.jar
-          mv java/flight/flight-jdbc-driver/target/flight-jdbc-driver-*-SNAPSHOT.jar artifacts/flight-jdbc-driver-sxt-${CIRCLE_SHA1:0:7}.jar
+          mv flight/flight-jdbc-driver/target/flight-jdbc-driver-*-SNAPSHOT.jar artifacts/flight-jdbc-driver-sxt-${CIRCLE_SHA1:0:7}.jar
       - store_artifacts:
           path: java/artifacts
 
