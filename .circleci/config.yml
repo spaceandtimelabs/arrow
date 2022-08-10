@@ -11,12 +11,12 @@ jobs:
     steps:
       - checkout
       - run: |
-          cd java
+          cd $CIRCLE_WORKING_DIRECTORY/java
           mvn install -DskipTests -Dcheckstyle.skip -Drat.skip=true
-          mkdir -p artifacts
-          mv flight/flight-jdbc-driver/target/flight-jdbc-driver-*-SNAPSHOT.jar artifacts/flight-jdbc-driver-sxt-${CIRCLE_SHA1:0:7}.jar
+          mkdir -p $CIRCLE_WORKING_DIRECTORY/artifacts
+          mv $CIRCLE_WORKING_DIRECTORY/java/flight/flight-jdbc-driver/target/flight-jdbc-driver-*-SNAPSHOT.jar $CIRCLE_WORKING_DIRECTORY/artifacts/flight-jdbc-driver-sxt-${CIRCLE_SHA1:0:7}.jar
       - store_artifacts:
-          path: java/artifacts
+          path: $CIRCLE_WORKING_DIRECTORY/java/artifacts
 
 workflows:
   maven_package:
