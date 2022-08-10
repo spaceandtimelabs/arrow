@@ -11,6 +11,8 @@ jobs:
     steps:
       - checkout
       - run: cd java && mvn install -DskipTests -Dcheckstyle.skip -Drat.skip=true
+      - store_artifacts:
+          path: java/flight/flight-jdbc-driver/target/flight-jdbc-driver-*-SNAPSHOT.jar
       - persist_to_workspace:
           root: ./java
           paths:
