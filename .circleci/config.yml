@@ -11,8 +11,8 @@ jobs:
     steps:
       - checkout
       - run: |
-          cd /root/project/java/flight/flight-jdbc-driver
-          mvn install -DskipTests -Dcheckstyle.skip -Drat.skip=true
+          cd /root/project/java
+          mvn install -DskipTests -Dcheckstyle.skip -Drat.skip=true -pl :flight-jdbc-driver -am
           mkdir -p /root/project/artifacts
           mv /root/project/java/flight/flight-jdbc-driver/target/flight-jdbc-driver-*-SNAPSHOT.jar /root/project/artifacts/flight-jdbc-driver-sxt-${CIRCLE_SHA1:0:7}.jar
       - persist_to_workspace:
