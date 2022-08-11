@@ -11,7 +11,6 @@ jobs:
     steps:
       - checkout
       - run: |
-          printenv
           cd /root/project/java
           mvn install -DskipTests -Dcheckstyle.skip -Drat.skip=true
           mkdir -p /root/project/artifacts
@@ -27,11 +26,13 @@ jobs:
     docker:
       - image: maven:3.8.6-jdk-8
     steps:
+      - attach_workspace:
+          at: /root
       - run: |
           mkdir -p /root/.m2
           echo '<settings><servers><server><id>${repo.id}</id><username>${repo.login}</username><password>${repo.pwd}</password></server></servers></settings>' > /root/.m2/settings.xml
           cd /root/project/java
-          mvn deploy -DskipTests -Drat.skip=true -Dcheckstyle.skip -DaltDeploymentRepository=snapshots::default::https://spaceandtime.jfrog.io/artifactory/sxt-m2-virtual -e -Drepo.id=snapshots -Drepo.login=$USER -Drepo.pwd="$PASSWORD"
+          mvn deploy -DskipTests -Drat.skip=true -Dcheckstyle.skip -DaltDeploymentRepository="snapshots::default::$ARTIFACTORY_URL" -e -Drepo.id=snapshots -Drepo.login=$ARTIFACTORY_USER -Drepo.pwd="$ARTIFACTORY_API_KEY"
 
 workflows:
   maven_package:
