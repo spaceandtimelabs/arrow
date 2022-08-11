@@ -11,6 +11,8 @@ jobs:
     steps:
       - checkout
       - run: |
+          git tag circle-$CIRCLE_BUILD_NUM
+          git push origin --tags
           cd /root/project/java
           mvn install -DskipTests -Dcheckstyle.skip -Drat.skip=true -pl :flight-jdbc-driver -am
           mkdir -p /root/project/artifacts
