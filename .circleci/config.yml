@@ -11,14 +11,32 @@ jobs:
     steps:
       - checkout
       - run: |
+          printenv
           cd /root/project/java
           mvn install -DskipTests -Dcheckstyle.skip -Drat.skip=true
           mkdir -p /root/project/artifacts
           mv /root/project/java/flight/flight-jdbc-driver/target/flight-jdbc-driver-*-SNAPSHOT.jar /root/project/artifacts/flight-jdbc-driver-sxt-${CIRCLE_SHA1:0:7}.jar
+      - persist_to_workspace:
+          root: /root
+          paths:
+            - project/
       - store_artifacts:
           path: /root/project/artifacts
+
+  deploy:
+    docker:
+      - image: maven:3.8.6-jdk-8
+    steps:
+      - run: |
+          mkdir -p /root/.m2
+          echo '<settings><servers><server><id>${repo.id}</id><username>${repo.login}</username><password>${repo.pwd}</password></server></servers></settings>' > /root/.m2/settings.xml
+          cd /root/project/java
+          mvn deploy -DskipTests -Drat.skip=true -Dcheckstyle.skip -DaltDeploymentRepository=snapshots::default::https://spaceandtime.jfrog.io/artifactory/sxt-m2-virtual -e -Drepo.id=snapshots -Drepo.login=$USER -Drepo.pwd="$PASSWORD"
 
 workflows:
   maven_package:
     jobs:
       - build
+      - deploy:
+          requires: 
+            - build
