@@ -18,6 +18,7 @@ jobs:
           root: /root
           paths:
             - project/
+            - .m2/
 
   deploy:
     docker:
@@ -29,7 +30,7 @@ jobs:
           mkdir -p /root/.m2
           echo '<settings><servers><server><id>${repo.id}</id><username>${repo.login}</username><password>${repo.pwd}</password></server></servers></settings>' > /root/.m2/settings.xml
           cd /root/project/java/flight/flight-jdbc-driver
-          mvn deploy -DskipTests -Drat.skip=true -Dcheckstyle.skip -DaltDeploymentRepository="snapshots::default::$ARTIFACTORY_URL" -e -Drepo.id=snapshots -Drepo.login=$ARTIFACTORY_USER -Drepo.pwd="$ARTIFACTORY_API_KEY" -Dmaven.install.skip=true
+          mvn deploy -DskipTests -Drat.skip=true -Dcheckstyle.skip -DaltDeploymentRepository="snapshots::default::$ARTIFACTORY_URL" -e -Drepo.id=snapshots -Drepo.login=$ARTIFACTORY_USER -Drepo.pwd="$ARTIFACTORY_API_KEY" -Dmaven.install.skip=true 
 
 workflows:
   maven_package:
