@@ -22,7 +22,7 @@ jobs:
             - project/
             - .m2/
 
-  deploy:
+  maven_deploy:
     docker:
       - image: maven:3.8.6-jdk-8
     steps:
@@ -34,10 +34,25 @@ jobs:
           cd /root/project/java/flight/flight-jdbc-driver
           mvn deploy -DskipTests -Drat.skip=true -Dcheckstyle.skip -DaltDeploymentRepository="snapshots::default::$ARTIFACTORY_URL" -e -Drepo.id=snapshots -Drepo.login=$ARTIFACTORY_USER -Drepo.pwd="$ARTIFACTORY_API_KEY" -Dmaven.install.skip=true 
 
+  docker_deploy:
+    docker:
+      - image: docker:17.05.0-ce-git
+    steps:
+      - setup_remote_docker
+      - attach_workspace:
+          at: /root
+      - run: |
+          docker build -f sqlline.Dockerfile . -t spaceandtime.jfrog.io/sxt-docker-docker/ballista-executor:$CIRCLE_BUILD_NUM
+          docker login -u$ARTIFACTORY_USER -p$ARTIFACTORY_API_KEY spaceandtime.jfrog.io
+          docker push spaceandtime.jfrog.io/sxt-docker-docker/ballista-sqlline:$CIRCLE_BUILD_NUM
+
 workflows:
-  maven_package:
+  main_workflow:
     jobs:
       - build
-      - deploy:
+      - maven_deploy:
+          requires: 
+            - build
+      - docker_deploy:
           requires: 
             - build
