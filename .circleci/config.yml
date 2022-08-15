@@ -43,7 +43,7 @@ jobs:
           at: /root
       - run: |
           cd /root/project/java/flight/flight-jdbc-driver
-          docker build -f sqlline.Dockerfile . -t spaceandtime.jfrog.io/sxt-docker-docker/ballista-executor:$CIRCLE_BUILD_NUM
+          docker build -f sqlline.Dockerfile . -t spaceandtime.jfrog.io/sxt-docker-docker/ballista-sqlline:$CIRCLE_BUILD_NUM
           docker login -u$ARTIFACTORY_USER -p$ARTIFACTORY_API_KEY spaceandtime.jfrog.io
           docker push spaceandtime.jfrog.io/sxt-docker-docker/ballista-sqlline:$CIRCLE_BUILD_NUM
 
