@@ -123,7 +123,6 @@ workflows:
           submodule: flight-sql
           context: Artifactory
           requires:
-            - Build Arrow Flight JAR
             - Build Flight Core JAR
       - artifactory/docker-publish:
           docker-registry: spaceandtime.jfrog.io/sxt-docker-docker
