@@ -40,7 +40,8 @@ jobs:
       - run:
           name: Build Package
           command: |
-            jfrog ./mvnw clean install
+            ls -a;
+            jfrog rt mvn clean;
       - artifactory/build-integration
       - save_cache:
           paths:
