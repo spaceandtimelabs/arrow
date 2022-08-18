@@ -166,7 +166,8 @@ workflows:
             - run:
                 name: Build Assembly
                 command: |
-                  jfrog rt mvn -pl ':flight-jdbc-driver' clean install -f java/pom.xml -Dcheckstyle.skip -Drat.skip=true -DskipTests -Dmaven.javadoc.skip=true;
+                  cd /root/project/java
+                  jfrog rt mvn -pl ':flight-jdbc-driver' clean install -f java/pom.xml -Dcheckstyle.skip -Drat.skip=true -DskipTests -Dmaven.javadoc.skip=true -am;
             - run:
                 name: Build Image
                 command: |
