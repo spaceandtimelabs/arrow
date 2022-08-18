@@ -42,7 +42,7 @@ jobs:
             jfrog rt mvn -pl ':<< parameters.submodule >>' clean install --update-snapshots -f java/pom.xml << parameters.extra_parameters >>;
       - artifactory/build-integration
       - store_test_results:
-          path: ${basedir}/target/surefire-reports
+          path: ${basedir}/target/test
       - save_cache:
           paths:
             - ~/.m2
@@ -63,7 +63,7 @@ workflows:
       - deploy_submodule:
           name: Build Arrow Memory JAR
           submodule: arrow-memory
-          extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          extra_parameters: "-Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Tag Build
