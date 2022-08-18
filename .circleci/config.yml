@@ -25,6 +25,8 @@ jobs:
         type: string
       extra_parameters:
         type: string
+      target_dir:
+        type: string
     steps:
       - checkout
       - artifactory/install
@@ -42,7 +44,7 @@ jobs:
             jfrog rt mvn -pl ':<< parameters.submodule >>' clean install << parameters.extra_parameters >>;
       - artifactory/build-integration
       - store_artifacts:
-          path: /target
+          path: << parameters.target_dir >>
       - run:
           name: Save test results
           command: |
@@ -71,6 +73,7 @@ workflows:
       - deploy_submodule:
           name: Build Arrow Memory Core JAR
           submodule: arrow-memory-core
+          target_dir: memory/memory-core/target
           extra_parameters: "test surefire:test surefire-report:report-only --update-snapshots -f java/pom.xml -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
