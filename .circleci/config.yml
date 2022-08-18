@@ -68,21 +68,21 @@ workflows:
             - Tag Build
       - deploy_submodule:
           name: Build Arrow Memory Core JAR
-          submodule: arrow-memory:core
+          submodule: arrow-memory-core
           extra_parameters: "surefire:test surefire-report:report-only --update-snapshots -f java/pom.xml -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Tag Build
       - deploy_submodule:
           name: Build Arrow Memory Netty JAR
-          submodule: arrow-memory:netty
+          submodule: arrow-memory-netty
           extra_parameters: "surefire:test surefire-report:report-only --update-snapshots -f java/pom.xml -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Memory Core JAR
       - deploy_submodule:
           name: Build Arrow Memory Unsafe JAR
-          submodule: arrow-memory:unsafe
+          submodule: arrow-memory-unsafe
           extra_parameters: "surefire:test surefire-report:report-only --update-snapshots -f java/pom.xml -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
