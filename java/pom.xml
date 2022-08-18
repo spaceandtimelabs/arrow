@@ -524,6 +524,32 @@
             </lifecycleMappingMetadata>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.jfrog.buildinfo</groupId>
+          <artifactId>artifactory-maven-plugin</artifactId>
+          <version>3.2.3</version>
+          <inherited>false</inherited>
+          <executions>
+            <execution>
+              <id>build-info</id>
+              <goals>
+                <goal>publish</goal>
+              </goals>
+              <configuration>
+                <deployProperties>
+                  <review.team>warehouse</review.team>
+                </deployProperties>
+                <publisher>
+                  <contextUrl>{{ARTIFACTORY_URL|"http://spaceandtime.jfrog.io/artifactory"}}/sxt-m2-virtual</contextUrl>
+                  <username>{{ARTIFACTORY_USER|security.getCurrentUsername()}}</username>
+                  <password>{{ARTIFACTORY_API_KEY|security.getEscapedEncryptedPassword()}}</password>
+                  <repoKey>sxt-m2-virtual</repoKey>
+                  <snapshotRepoKey>sxt-m2-virtual</snapshotRepoKey>
+                </publisher>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
