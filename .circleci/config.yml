@@ -115,6 +115,7 @@ workflows:
           context: Artifactory
           requires:
             - Build Flight SQL JAR
+            - Build Arrow JDBC JAR
       - deploy_submodule:
           name: Build Flight SQL JAR
           submodule: flight-sql
