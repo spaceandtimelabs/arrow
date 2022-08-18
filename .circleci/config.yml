@@ -116,7 +116,7 @@ workflows:
           docker-steps:
             - restore_cache:
                 keys:
-                  - sqlline-dockerfile-build-dependencies-{{ checksum "pom.xml" }}
+                  - sqlline-dockerfile-build-dependencies-{{ checksum "/root/project/java/pom.xml" }}
                   - sqlline-dockerfile-build-dependencies-
             - run:
                 name: Build Assembly
@@ -132,7 +132,7 @@ workflows:
             - save_cache:
                 paths:
                   - ~/.m2
-                key: sqlline-dockerfile-build-dependencies-{{ checksum "pom.xml" }}
+                key: sqlline-dockerfile-build-dependencies-{{ checksum "/root/project/java/pom.xml" }}
           docker-tag: >-
             spaceandtime.jfrog.io/sxt-docker-docker/ballista-sqlline:$CIRCLE_BUILD_NUM
           name: Build Flight SQLLine Docker Image
