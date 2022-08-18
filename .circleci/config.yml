@@ -45,7 +45,7 @@ jobs:
       - run:
           name: Build Package
           command: |
-            jfrog rt mvn -pl 'org.apache.arrow:<< parameters.submodule >>' clean install -f java/pom.xml;
+            jfrog rt mvn -pl ':<< parameters.submodule >>' clean install -f java/pom.xml -Dcheckstyle.skip -Drat.skip=true -DskipTests -Dmaven.javadoc.skip=true;
       - artifactory/build-integration
       - save_cache:
           paths:
