@@ -23,8 +23,8 @@ jobs:
             - project/
             - .m2/
   deploy_submodule:
-    docker:
-      - image: maven:3.8.6-jdk-8
+    executor: maven/default
+    working_directory: ~/arrow
     parameters:
       submodule:
         type: string
