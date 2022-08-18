@@ -18,6 +18,19 @@
     <version>18</version>
   </parent>
 
+  <distributionManagement>
+    <repository>
+      <id>central</id>
+      <name>a0tzhypqqqosu-artifactory-primary-0-releases</name>
+      <url>https://spaceandtime.jfrog.io/artifactory/sxt-m2-virtual</url>
+    </repository>
+    <snapshotRepository>
+      <id>snapshots</id>
+      <name>a0tzhypqqqosu-artifactory-primary-0-snapshots</name>
+      <url>https://spaceandtime.jfrog.io/artifactory/sxt-m2-virtual</url>
+    </snapshotRepository>
+  </distributionManagement>
+
   <groupId>org.apache.arrow</groupId>
   <artifactId>arrow-java-root</artifactId>
   <version>9.0.0-SNAPSHOT</version>
