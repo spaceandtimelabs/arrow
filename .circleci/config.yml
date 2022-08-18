@@ -8,7 +8,7 @@ orbs:
 jobs:
   tag:
     executor: maven/default
-    working_directory: ~/arrow
+    working_directory: ~/arrow/java
     steps:
       - checkout
       - run:
