@@ -123,6 +123,14 @@ workflows:
           context: Artifactory
           requires:
             - Build Flight Core JAR
+      - deploy_submodule:
+          name: Build Flight JDBC Driver JAR
+          submodule: flight-jdbc-driver
+          extra_parameters: "-Drat.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dmaven.site.skip=true"
+          context: Artifactory
+          requires:
+            - Build Flight SQL JAR
+            - Build Arrow JDBC JAR
       - artifactory/docker-publish:
           docker-registry: spaceandtime.jfrog.io/sxt-docker-docker
           docker-steps:
@@ -131,15 +139,15 @@ workflows:
                   - sqlline-dockerfile-build-dependencies-{{ checksum "java/pom.xml" }}
                   - sqlline-dockerfile-build-dependencies-
             - run:
-                name: Build Assembly
+                name: Download Assembly
                 command: |
                   jfrog rt mvn -pl ':flight-jdbc-driver' clean install -f java/pom.xml --update-snapshots -Dcheckstyle.skip=true -Dmaven.site.skip=true -Drat.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true;
-            - artifactory/build-integration
             - run:
                 name: Build Image
                 command: |
                   cd java/flight/flight-jdbc-driver
                   docker build -f sqlline.Dockerfile . -t $DOCKERTAG
+            - artifactory/build-integration
             - save_cache:
                 paths:
                   - ~/.m2
@@ -150,5 +158,4 @@ workflows:
           repository: sxt-docker-docker
           context: Artifactory
           requires:
-            - Build Flight SQL JAR
-            - Build Arrow JDBC JAR
+            - Build Flight JDBC Driver JAR
