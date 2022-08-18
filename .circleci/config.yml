@@ -112,12 +112,6 @@ workflows:
           requires:
             - Build Flight SQL JAR
             - Build Arrow JDBC JAR
-      - deploy_submodule:
-          name: Build Flight SQL JAR
-          submodule: flight-sql
-          context: Artifactory
-          requires:
-            - Build Flight Core JAR
       - artifactory/docker-publish:
           docker-registry: spaceandtime.jfrog.io/sxt-docker-docker
           docker-steps:
@@ -141,8 +135,8 @@ workflows:
                 key: sqlline-dockerfile-build-dependencies-{{ checksum "pom.xml" }}
           docker-tag: >-
             spaceandtime.jfrog.io/sxt-docker-docker/ballista-sqlline:$CIRCLE_BUILD_NUM
-          name: Publish Flight SQLLine Docker Image
+          name: Build Flight SQLLine Docker Image
           repository: sxt-docker-docker
           context: Artifactory
           requires:
-            - Build Flight JDBC Driver JAR
+            - Build Flight Core JAR
