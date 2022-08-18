@@ -44,7 +44,7 @@ jobs:
             jfrog rt mvn -pl ':<< parameters.submodule >>' clean install << parameters.extra_parameters >>;
       - artifactory/build-integration
       - store_artifacts:
-          path: << parameters.target_dir >>/<< parameters.submodule >>-*.jar
+          path: << parameters.target_dir >>/*.jar
       - run:
           name: Save test results
           command: |
