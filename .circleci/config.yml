@@ -6,6 +6,17 @@ orbs:
   artifactory: jfrog/artifactory-orb@1.0.1
 
 jobs:
+  tag:
+    executor: maven/default
+    working_directory: ~/arrow
+    steps:
+      - checkout
+      - run:
+          name: Create Tag
+          command: git tag circle-$CIRCLE_BUILD_NUM
+      - run:
+          name: Push Tag
+          command: git push origin --tags
   build:
     docker:
       - image: maven:3.8.6-jdk-8
@@ -35,9 +46,6 @@ jobs:
       - run:
           name: Submodule Name
           command: echo << parameters.submodule >>
-      - run: |
-          cd java;
-          ls;
       - restore_cache:
           keys:
             - << parameters.submodule >>-dependencies-{{ checksum "java/pom.xml" }}
@@ -79,10 +87,14 @@ jobs:
 workflows:
   main_workflow:
     jobs:
+      - tag:
+          name: Tag Build
       - deploy_submodule:
           name: Build Arrow Java Root JAR
           submodule: arrow-java-root
           context: Artifactory
+          requires:
+            - Tag Build
       - deploy_submodule:
           name: Build Arrow Format JAR
           submodule: arrow-format
@@ -137,10 +149,3 @@ workflows:
           context: Artifactory
           requires:
             - Build Arrow Flight JAR
-      - build
-      - maven_deploy:
-          requires: 
-            - build
-      - docker_deploy:
-          requires: 
-            - build
