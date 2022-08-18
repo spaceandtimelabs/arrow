@@ -143,7 +143,7 @@ workflows:
           name: Build Flight Core JAR
           submodule: flight-core
           target_dir: java/flight/flight-core
-          extra_parameters: "test surefire:test --update-snapshots -f java/pom.xml -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          extra_parameters: "--update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Vector JAR
