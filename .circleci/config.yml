@@ -37,7 +37,7 @@ jobs:
       - run:
           name: Build Package
           command: |
-            jfrog rt mvn -pl ':<< parameters.submodule >>' clean install --update-snapshots -f java/pom.xml -Dcheckstyle.skip -Drat.skip=true -DskipTests -Dmaven.javadoc.skip=true -am;
+            jfrog rt mvn -pl ':<< parameters.submodule >>' clean install --update-snapshots -f java/pom.xml -Dcheckstyle.skip=true -Dmaven.site.skip=true -Drat.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -am;
       - artifactory/build-integration
       - save_cache:
           paths:
@@ -127,7 +127,7 @@ workflows:
                 name: Build Assembly
                 command: |
                   cd /root/project/java
-                  jfrog rt mvn -pl ':flight-jdbc-driver' clean install -f java/pom.xml --update-snapshots -Dcheckstyle.skip -Drat.skip=true -DskipTests -Dmaven.javadoc.skip=true -am;
+                  jfrog rt mvn -pl ':flight-jdbc-driver' clean install -f java/pom.xml --update-snapshots -Dcheckstyle.skip=true -Dmaven.site.skip=true -Drat.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -am;
             - run:
                 name: Build Image
                 command: |
