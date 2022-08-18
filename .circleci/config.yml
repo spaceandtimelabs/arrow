@@ -135,7 +135,7 @@ workflows:
                 key: sqlline-dockerfile-build-dependencies-{{ checksum "pom.xml" }}
           docker-tag: >-
             spaceandtime.jfrog.io/sxt-docker-docker/ballista-sqlline:$CIRCLE_BUILD_NUM
-          name: Publish Flight SQLLine Docker Image
+          name: Build Flight SQLLine Docker Image
           repository: sxt-docker-docker
           context: Artifactory
           requires:
