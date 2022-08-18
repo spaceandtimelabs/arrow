@@ -54,26 +54,19 @@ workflows:
       - tag:
           name: Tag Build
       - deploy_submodule:
-          name: Build Arrow Java Root JAR
-          submodule: arrow-java-root
-          extra_parameters: "surefire:test -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
-          context: Artifactory
-          requires:
-            - Tag Build
-      - deploy_submodule:
           name: Build Arrow Format JAR
           submodule: arrow-format
           extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
-            - Build Arrow Java Root JAR
+            - Tag Build
       - deploy_submodule:
           name: Build Arrow Memory JAR
           submodule: arrow-memory
           extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
-            - Build Arrow Java Root JAR
+            - Tag Build
       - deploy_submodule:
           name: Build Arrow Vector JAR
           submodule: arrow-vector
