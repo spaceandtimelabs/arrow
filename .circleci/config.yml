@@ -116,23 +116,22 @@ workflows:
           docker-steps:
             - restore_cache:
                 keys:
-                  - sqlline-dockerfile-build-dependencies-{{ checksum "/root/project/java/pom.xml" }}
+                  - sqlline-dockerfile-build-dependencies-{{ checksum "java/pom.xml" }}
                   - sqlline-dockerfile-build-dependencies-
             - run:
                 name: Build Assembly
                 command: |
-                  cd /root/project/java
-                  jfrog rt mvn -pl ':flight-jdbc-driver' clean install -f ./pom.xml --update-snapshots -Dcheckstyle.skip=true -Dmaven.site.skip=true -Drat.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true;
+                  jfrog rt mvn -pl ':flight-jdbc-driver' clean install -f java/pom.xml --update-snapshots -Dcheckstyle.skip=true -Dmaven.site.skip=true -Drat.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true;
             - artifactory/build-integration
             - run:
                 name: Build Image
                 command: |
-                  cd /root/project/java/flight/flight-jdbc-driver
+                  cd java/flight/flight-jdbc-driver
                   docker build -f sqlline.Dockerfile . -t $DOCKERTAG
             - save_cache:
                 paths:
                   - ~/.m2
-                key: sqlline-dockerfile-build-dependencies-{{ checksum "/root/project/java/pom.xml" }}
+                key: sqlline-dockerfile-build-dependencies-{{ checksum "java/pom.xml" }}
           docker-tag: >-
             spaceandtime.jfrog.io/sxt-docker-docker/ballista-sqlline:$CIRCLE_BUILD_NUM
           name: Build Flight SQLLine Docker Image
