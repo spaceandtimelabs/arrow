@@ -40,7 +40,7 @@ jobs:
           ls;
       - restore_cache:
           keys:
-            - << parameters.submodule >>-dependencies-{{ checksum "pom.xml" }}
+            - << parameters.submodule >>-dependencies-{{ checksum "java/pom.xml" }}
             - << parameters.submodule >>-dependencies-
       - run:
           name: Build Package
@@ -50,7 +50,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-          key: << parameters.submodule >>-dependencies-{{ checksum "pom.xml" }}
+          key: << parameters.submodule >>-dependencies-{{ checksum "java/pom.xml" }}
   maven_deploy:
     docker:
       - image: maven:3.8.6-jdk-8
