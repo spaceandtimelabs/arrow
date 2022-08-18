@@ -40,7 +40,7 @@ jobs:
       - run:
           name: Build Package
           command: |
-            jfrog rt mvn -DskipTests -Dmaven.javadoc.skip=true clean test-compile install
+            jfrog rt mvn clean install -DskipTests -Dmaven.javadoc.skip=true
       - artifactory/build-integration
       - save_cache:
           paths:
