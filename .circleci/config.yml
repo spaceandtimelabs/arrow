@@ -110,6 +110,9 @@ workflows:
           submodule: flight-core
           context: Artifactory
           requires:
+            - Build Arrow Format JAR
+            - Build Arrow Memory JAR
+            - Build Arrow Vector JAR
             - Build Arrow Flight JAR
       - deploy_submodule:
           name: Build Flight JDBC Driver JAR
