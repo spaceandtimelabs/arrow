@@ -79,13 +79,12 @@ workflows:
           submodule: arrow-compression
           context: Artifactory
           requires:
-            - Build Arrow Java Root JAR
+            - Build Arrow Vector JAR
       - deploy_submodule:
           name: Build Arrow Tools JAR
           submodule: arrow-tools
           context: Artifactory
           requires:
-            - Build Arrow Vector JAR
             - Build Arrow Compression JAR
       - deploy_submodule:
           name: Build Arrow JDBC JAR
