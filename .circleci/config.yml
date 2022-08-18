@@ -95,7 +95,7 @@ workflows:
           extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
-            - Build Arrow Java Root JAR
+            - Build Arrow Vector JAR
       - deploy_submodule:
           name: Build Arrow Flight JAR
           submodule: arrow-flight
