@@ -44,12 +44,12 @@ jobs:
             jfrog rt mvn -pl ':<< parameters.submodule >>' clean install << parameters.extra_parameters >>;
       - artifactory/build-integration
       - store_artifacts:
-          path: << parameters.target_dir >>
+          path: << parameters.target_dir >>/<< parameters.submodule >>-*.jar
       - run:
           name: Save test results
           command: |
             mkdir -p ~/test-results/junit/
-            find . -type f -regex "*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+            find . -type f -regex "<< parameters.target_dir >>/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
           when: always
       - store_test_results:
           path: ~/test-results
