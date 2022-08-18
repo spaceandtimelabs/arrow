@@ -47,14 +47,8 @@ jobs:
           path: << parameters.target_dir >>/*.jar
       - store_artifacts:
           path: << parameters.target_dir >>
-      - run:
-          name: Save test results
-          command: |
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex "<< parameters.target_dir >>/surefire-reports/*.xml" -exec cp {} ~/test-results/junit/ \;
-          when: always
       - store_test_results:
-          path: ~/test-results
+          path: << parameters.target_dir >>/surefire-reports
       - save_cache:
           paths:
             - ~/.m2
@@ -77,7 +71,7 @@ workflows:
           name: Build Arrow Memory Core JAR
           submodule: arrow-memory-core
           target_dir: java/memory/memory-core/target
-          extra_parameters: "test surefire:test surefire-report:report-only --update-snapshots -f java/pom.xml -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          extra_parameters: "test surefire:test --update-snapshots -f java/pom.xml -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Tag Build
