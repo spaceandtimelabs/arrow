@@ -40,9 +40,7 @@ jobs:
       - run:
           name: Build Package
           command: |
-            cd java;
-            ls -a;
-            jfrog rt mvn clean;
+            jfrog rt mvn clean -f java/pom.xml;
       - artifactory/build-integration
       - save_cache:
           paths:
