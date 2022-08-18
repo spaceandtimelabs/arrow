@@ -33,15 +33,15 @@ jobs:
       - artifactory/install
       - artifactory/configure
       - run: echo << parameters.submodule >>
-#      - restore_cache:
-#          keys:
-#            - << parameters.submodule >>-dependencies-{{ checksum "pom.xml" }}
-#            - << parameters.submodule >>-dependencies-
+      - restore_cache:
+          keys:
+            - << parameters.submodule >>-dependencies-{{ checksum "pom.xml" }}
+            - << parameters.submodule >>-dependencies-
       - run:
           name: Build Package
           command: |
             cd java;
-            jfrog rt mvn -pl 'org.apache.arrow:arrow-algorithm' clean install;
+            jfrog rt ping;
       - artifactory/build-integration
       - save_cache:
           paths:
