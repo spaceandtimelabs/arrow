@@ -41,6 +41,8 @@ jobs:
           command: |
             jfrog rt mvn -pl ':<< parameters.submodule >>' clean install --update-snapshots -f java/pom.xml << parameters.extra_parameters >>;
       - artifactory/build-integration
+      - store_test_results:
+          path: ${basedir}/target/surefire-reports
       - save_cache:
           paths:
             - ~/.m2
@@ -54,7 +56,7 @@ workflows:
       - deploy_submodule:
           name: Build Arrow Java Root JAR
           submodule: arrow-java-root
-          extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          extra_parameters: "surefire:test -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Tag Build
