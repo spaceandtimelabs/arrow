@@ -23,6 +23,8 @@ jobs:
     parameters:
       submodule:
         type: string
+      extra_parameters:
+        type: string
     steps:
       - checkout
       - artifactory/install
@@ -37,7 +39,7 @@ jobs:
       - run:
           name: Build Package
           command: |
-            jfrog rt mvn -pl ':<< parameters.submodule >>' clean install --update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true;
+            jfrog rt mvn -pl ':<< parameters.submodule >>' clean install --update-snapshots -f java/pom.xml << parameters.extra_parameters >>;
       - artifactory/build-integration
       - save_cache:
           paths:
@@ -52,24 +54,28 @@ workflows:
       - deploy_submodule:
           name: Build Arrow Java Root JAR
           submodule: arrow-java-root
+          extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Tag Build
       - deploy_submodule:
           name: Build Arrow Format JAR
           submodule: arrow-format
+          extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Java Root JAR
       - deploy_submodule:
           name: Build Arrow Memory JAR
           submodule: arrow-memory
+          extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Java Root JAR
       - deploy_submodule:
           name: Build Arrow Vector JAR
           submodule: arrow-vector
+          extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Format JAR
@@ -77,30 +83,35 @@ workflows:
       - deploy_submodule:
           name: Build Arrow Compression JAR
           submodule: arrow-compression
+          extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Vector JAR
       - deploy_submodule:
           name: Build Arrow JDBC JAR
           submodule: arrow-jdbc
+          extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Vector JAR
       - deploy_submodule:
           name: Build Arrow Plasma JAR
           submodule: arrow-plasma
+          extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Java Root JAR
       - deploy_submodule:
           name: Build Arrow Flight JAR
           submodule: arrow-flight
+          extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Java Root JAR
       - deploy_submodule:
           name: Build Flight Core JAR
           submodule: flight-core
+          extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Vector JAR
@@ -108,6 +119,7 @@ workflows:
       - deploy_submodule:
           name: Build Flight SQL JAR
           submodule: flight-sql
+          extra_parameters: "-Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Flight Core JAR
