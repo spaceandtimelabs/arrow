@@ -17,22 +17,6 @@ jobs:
       - run:
           name: Push Tag
           command: git push origin --tags
-  build:
-    docker:
-      - image: maven:3.8.6-jdk-8
-    steps:
-      - checkout
-      - run: |
-          git tag circle-$CIRCLE_BUILD_NUM
-          git push origin --tags
-          cd /root/project/java
-          mvn install -Dmaven.test.skip=true -Dcheckstyle.skip=true -Drat.skip=true -pl :flight-jdbc-driver -am
-          mkdir -p /root/project/artifacts
-      - persist_to_workspace:
-          root: /root
-          paths:
-            - project/
-            - .m2/
   deploy_submodule:
     executor: maven/default
     working_directory: ~/arrow
@@ -53,36 +37,12 @@ jobs:
       - run:
           name: Build Package
           command: |
-            jfrog rt mvn -pl ':<< parameters.submodule >>' clean install -f java/pom.xml -Dcheckstyle.skip -Drat.skip=true -DskipTests -Dmaven.javadoc.skip=true -am;
+            jfrog rt mvn -pl ':<< parameters.submodule >>' clean install --update-snapshots -f java/pom.xml -Dcheckstyle.skip -Drat.skip=true -DskipTests -Dmaven.javadoc.skip=true -am;
       - artifactory/build-integration
       - save_cache:
           paths:
             - ~/.m2
           key: << parameters.submodule >>-dependencies-{{ checksum "java/pom.xml" }}
-  maven_deploy:
-    docker:
-      - image: maven:3.8.6-jdk-8
-    steps:
-      - attach_workspace:
-          at: /root
-      - run: |
-          mkdir -p /root/.m2
-          echo '<settings><servers><server><id>${repo.id}</id><username>${repo.login}</username><password>${repo.pwd}</password></server></servers></settings>' > /root/.m2/settings.xml
-          cd /root/project/java/flight/flight-jdbc-driver
-          mvn deploy -DskipTests -Drat.skip=true -Dcheckstyle.skip -DaltDeploymentRepository="snapshots::default::$ARTIFACTORY_URL" -e -Drepo.id=snapshots -Drepo.login=$ARTIFACTORY_USER -Drepo.pwd="$ARTIFACTORY_API_KEY" -Dmaven.install.skip=true 
-
-  docker_deploy:
-    docker:
-      - image: docker:17.05.0-ce-git
-    steps:
-      - setup_remote_docker
-      - attach_workspace:
-          at: /root
-      - run: |
-          cd /root/project/java/flight/flight-jdbc-driver
-          docker build -f sqlline.Dockerfile . -t spaceandtime.jfrog.io/sxt-docker-docker/ballista-sqlline:$CIRCLE_BUILD_NUM
-          docker login -u$ARTIFACTORY_USER -p$ARTIFACTORY_API_KEY spaceandtime.jfrog.io
-          docker push spaceandtime.jfrog.io/sxt-docker-docker/ballista-sqlline:$CIRCLE_BUILD_NUM
 
 workflows:
   main_workflow:
@@ -167,7 +127,7 @@ workflows:
                 name: Build Assembly
                 command: |
                   cd /root/project/java
-                  jfrog rt mvn -pl ':flight-jdbc-driver' clean install -f java/pom.xml -Dcheckstyle.skip -Drat.skip=true -DskipTests -Dmaven.javadoc.skip=true -am;
+                  jfrog rt mvn -pl ':flight-jdbc-driver' clean install -f java/pom.xml --update-snapshots -Dcheckstyle.skip -Drat.skip=true -DskipTests -Dmaven.javadoc.skip=true -am;
             - run:
                 name: Build Image
                 command: |
