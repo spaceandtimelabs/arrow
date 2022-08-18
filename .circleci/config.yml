@@ -45,6 +45,8 @@ jobs:
       - artifactory/build-integration
       - store_artifacts:
           path: << parameters.target_dir >>/*.jar
+      - store_artifacts:
+          path: << parameters.target_dir >>
       - run:
           name: Save test results
           command: |
