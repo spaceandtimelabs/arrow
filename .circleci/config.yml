@@ -44,9 +44,9 @@ jobs:
             jfrog rt mvn -pl ':<< parameters.submodule >>' clean install << parameters.extra_parameters >>;
       - artifactory/build-integration
       - store_artifacts:
-          path: << parameters.target_dir >>
+          path: << parameters.target_dir >>/target
       - store_test_results:
-          path: << parameters.target_dir >>/surefire-reports
+          path: << parameters.target_dir >>/target/surefire-reports
       - save_cache:
           paths:
             - ~/.m2
@@ -60,15 +60,15 @@ workflows:
       - deploy_submodule:
           name: Build Arrow Format JAR
           submodule: arrow-format
-          target_dir: memory/memory-core/target
-          extra_parameters: "--update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          target_dir: java/format
+          extra_parameters: "test surefire:test --update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Tag Build
       - deploy_submodule:
           name: Build Arrow Memory Core JAR
           submodule: arrow-memory-core
-          target_dir: java/memory/memory-core/target
+          target_dir: java/memory/memory-core
           extra_parameters: "test surefire:test --update-snapshots -f java/pom.xml -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
@@ -76,23 +76,23 @@ workflows:
       - deploy_submodule:
           name: Build Arrow Memory Netty JAR
           submodule: arrow-memory-netty
-          target_dir: memory/memory-core/target
-          extra_parameters: "surefire:test surefire-report:report-only --update-snapshots -f java/pom.xml -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          target_dir: java/memory/memory-netty
+          extra_parameters: "test surefire:test --update-snapshots -f java/pom.xml -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Memory Core JAR
       - deploy_submodule:
           name: Build Arrow Memory Unsafe JAR
           submodule: arrow-memory-unsafe
-          target_dir: memory/memory-core/target
-          extra_parameters: "surefire:test surefire-report:report-only --update-snapshots -f java/pom.xml -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          target_dir: java/memory/memory-unsafe
+          extra_parameters: "test surefire:test --update-snapshots -f java/pom.xml -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Memory Core JAR
       - deploy_submodule:
           name: Build Arrow Memory JAR
           submodule: arrow-memory
-          target_dir: memory/memory-core/target
+          target_dir: java/memory
           extra_parameters: "--update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
