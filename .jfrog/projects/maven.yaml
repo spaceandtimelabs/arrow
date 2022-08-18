@@ -1,10 +1,10 @@
 version: 1
 type: maven
 resolver:
-  serverId: artifactory
+  serverId: Default-Server
   snapshotRepo: sxt-m2-virtual
   releaseRepo: sxt-m2-virtual
 deployer:
-  serverId: artifactory
+  serverId: Default-Server
   snapshotRepo: sxt-m2-virtual
   releaseRepo: sxt-m2-virtual
