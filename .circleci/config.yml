@@ -41,8 +41,14 @@ jobs:
           command: |
             jfrog rt mvn -pl ':<< parameters.submodule >>' clean install --update-snapshots -f java/pom.xml << parameters.extra_parameters >>;
       - artifactory/build-integration
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
       - store_test_results:
-          path: ${basedir}/target/test
+          path: ~/test-results
       - save_cache:
           paths:
             - ~/.m2
@@ -63,7 +69,7 @@ workflows:
       - deploy_submodule:
           name: Build Arrow Memory JAR
           submodule: arrow-memory
-          extra_parameters: "-Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          extra_parameters: "surefire:test surefire-report:report-only -Drat.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Tag Build
