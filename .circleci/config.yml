@@ -45,7 +45,7 @@ jobs:
       - run:
           name: Build Package
           command: |
-            jfrog rt mvn;
+            jfrog rt mvn clean;
       - artifactory/build-integration
       - save_cache:
           paths:
