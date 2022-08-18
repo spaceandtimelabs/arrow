@@ -123,6 +123,7 @@ workflows:
                 command: |
                   cd /root/project/java
                   jfrog rt mvn -pl ':flight-jdbc-driver' clean install --update-snapshots -Dcheckstyle.skip=true -Dmaven.site.skip=true -Drat.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true;
+            - artifactory/build-integration
             - run:
                 name: Build Image
                 command: |
