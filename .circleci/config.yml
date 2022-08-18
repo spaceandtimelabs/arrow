@@ -114,8 +114,14 @@ workflows:
           submodule: flight-jdbc-driver
           context: Artifactory
           requires:
-            - Build Arrow JDBC JAR
+            - Build Flight SQL JAR
+      - deploy_submodule:
+          name: Build Flight SQL JAR
+          submodule: flight-sql
+          context: Artifactory
+          requires:
             - Build Arrow Flight JAR
+            - Build Flight Core JAR
       - artifactory/docker-publish:
           docker-registry: spaceandtime.jfrog.io/sxt-docker-docker
           docker-steps:
