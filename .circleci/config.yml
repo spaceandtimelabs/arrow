@@ -32,21 +32,25 @@ jobs:
       - checkout
       - artifactory/install
       - artifactory/configure
-      - run: echo << parameters.submodule >>
-      - run: cd java
+      - run:
+          name: Submodule Name
+          command: echo << parameters.submodule >>
+      - run: |
+          cd java;
+          ls;
       - restore_cache:
           keys:
-            - arrow-dependencies-{{ checksum "pom.xml" }}
-            - arrow-dependencies-
+            - << parameters.submodule >>-dependencies-{{ checksum "pom.xml" }}
+            - << parameters.submodule >>-dependencies-
       - run:
           name: Build Package
           command: |
-            jfrog rt ping;
+            jfrog rt mvn;
       - artifactory/build-integration
       - save_cache:
           paths:
             - ~/.m2
-          key: arrow-dependencies-{{ checksum "pom.xml" }}
+          key: << parameters.submodule >>-dependencies-{{ checksum "pom.xml" }}
   maven_deploy:
     docker:
       - image: maven:3.8.6-jdk-8
