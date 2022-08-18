@@ -32,6 +32,7 @@ jobs:
       - checkout
       - artifactory/install
       - artifactory/configure
+      - run: echo << parameters.submodule >>
       - restore_cache:
           keys:
             - << parameters.submodule >>-dependencies-{{ checksum "pom.xml" }}
