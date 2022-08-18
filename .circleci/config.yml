@@ -84,7 +84,9 @@ workflows:
           submodule: arrow-tools
           context: Artifactory
           requires:
-            - Build Arrow Java Root JAR
+            - Build Arrow Format JAR
+            - Build Arrow Memory JAR
+            - Build Arrow Compression JAR
       - deploy_submodule:
           name: Build Arrow JDBC JAR
           submodule: arrow-jdbc
