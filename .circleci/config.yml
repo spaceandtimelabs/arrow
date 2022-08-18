@@ -40,7 +40,8 @@ jobs:
       - run:
           name: Build Package
           command: |
-            jfrog rt mvn clean -f=java/pom.xml;
+            cd java;
+            jfrog rt mvn -pl 'org.apache.arrow:arrow-algorithm' clean install;
       - artifactory/build-integration
       - save_cache:
           paths:
