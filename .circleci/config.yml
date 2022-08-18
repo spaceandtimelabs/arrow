@@ -21,7 +21,29 @@ jobs:
           paths:
             - project/
             - .m2/
-
+  deploy_submodule:
+    docker:
+      - image: maven:3.8.6-jdk-8
+    parameters:
+      name:
+        type: string
+    steps:
+      - checkout
+      - artifactory/install
+      - artifactory/configure
+      - restore_cache:
+          keys:
+            - << parameters.name >>-dependencies-{{ checksum "pom.xml" }}
+            - << parameters.name >>-dependencies-
+      - run:
+          name: Build Package
+          command: |
+            jfrog rt mvn -pl 'org.apache.arrow:<< parameters.name >>' -DskipTests -Dmaven.javadoc.skip=true clean test-compile install
+      - artifactory/build-integration
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: << parameters.name >>-dependencies-{{ checksum "pom.xml" }}
   maven_deploy:
     docker:
       - image: maven:3.8.6-jdk-8
@@ -50,6 +72,9 @@ jobs:
 workflows:
   main_workflow:
     jobs:
+      - deploy_submodule:
+          name: arrow-algorithm
+          context: Artifactory
       - build
       - maven_deploy:
           requires: 
