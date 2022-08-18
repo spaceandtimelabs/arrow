@@ -45,7 +45,7 @@ jobs:
       - run:
           name: Build Package
           command: |
-            jfrog rt mvn clean -f java/pom.xml;
+            jfrog rt mvn -pl 'org.apache.arrow:<< parameters.submodule >>' clean install -f java/pom.xml;
       - artifactory/build-integration
       - save_cache:
           paths:
@@ -80,8 +80,63 @@ workflows:
   main_workflow:
     jobs:
       - deploy_submodule:
-          submodule: arrow-algorithm
+          name: Build Arrow Java Root JAR
+          submodule: arrow-java-root
           context: Artifactory
+      - deploy_submodule:
+          name: Build Arrow Format JAR
+          submodule: arrow-format
+          context: Artifactory
+          requires:
+            - Build Arrow Java Root JAR
+      - deploy_submodule:
+          name: Build Arrow Memory JAR
+          submodule: arrow-memory
+          context: Artifactory
+          requires:
+            - Build Arrow Java Root JAR
+      - deploy_submodule:
+          name: Build Arrow Vector JAR
+          submodule: arrow-vector
+          context: Artifactory
+          requires:
+            - Build Arrow Java Root JAR
+      - deploy_submodule:
+          name: Build Arrow Compression JAR
+          submodule: arrow-compression
+          context: Artifactory
+          requires:
+            - Build Arrow Java Root JAR
+      - deploy_submodule:
+          name: Build Arrow Tools JAR
+          submodule: arrow-tools
+          context: Artifactory
+          requires:
+            - Build Arrow Java Root JAR
+      - deploy_submodule:
+          name: Build Arrow JDBC JAR
+          submodule: arrow-jdbc
+          context: Artifactory
+          requires:
+            - Build Arrow Java Root JAR
+      - deploy_submodule:
+          name: Build Arrow Plasma JAR
+          submodule: arrow-plasma
+          context: Artifactory
+          requires:
+            - Build Arrow Java Root JAR
+      - deploy_submodule:
+          name: Build Arrow Flight JAR
+          submodule: arrow-flight
+          context: Artifactory
+          requires:
+            - Build Arrow Java Root JAR
+      - deploy_submodule:
+          name: Build Flight Core JAR
+          submodule: flight-core
+          context: Artifactory
+          requires:
+            - Build Arrow Flight JAR
       - build
       - maven_deploy:
           requires: 
