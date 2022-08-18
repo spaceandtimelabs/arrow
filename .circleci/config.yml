@@ -101,8 +101,8 @@ workflows:
       - deploy_submodule:
           name: Build Arrow Vector JAR
           submodule: arrow-vector
-          target_dir: memory/memory-core/target
-          extra_parameters: "--update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          target_dir: java/vector
+          extra_parameters: "test surefire:test --update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Format JAR
@@ -110,40 +110,40 @@ workflows:
       - deploy_submodule:
           name: Build Arrow Compression JAR
           submodule: arrow-compression
-          target_dir: memory/memory-core/target
-          extra_parameters: "--update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          target_dir: java/compression
+          extra_parameters: "test surefire:test --update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Vector JAR
       - deploy_submodule:
           name: Build Arrow JDBC JAR
           submodule: arrow-jdbc
-          target_dir: memory/memory-core/target
-          extra_parameters: "--update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          target_dir: java/adapter/jdbc
+          extra_parameters: "test surefire:test --update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Vector JAR
       - deploy_submodule:
           name: Build Arrow Plasma JAR
           submodule: arrow-plasma
-          target_dir: memory/memory-core/target
-          extra_parameters: "--update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          target_dir: java/plasma
+          extra_parameters: "test surefire:test --update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Vector JAR
       - deploy_submodule:
           name: Build Arrow Flight JAR
           submodule: arrow-flight
-          target_dir: memory/memory-core/target
-          extra_parameters: "--update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          target_dir: java/flight
+          extra_parameters: "test surefire:test --update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Tag Build
       - deploy_submodule:
           name: Build Flight Core JAR
           submodule: flight-core
-          target_dir: memory/memory-core/target
-          extra_parameters: "--update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          target_dir: java/flight/flight-core
+          extra_parameters: "test surefire:test --update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Arrow Vector JAR
@@ -151,16 +151,16 @@ workflows:
       - deploy_submodule:
           name: Build Flight SQL JAR
           submodule: flight-sql
-          target_dir: memory/memory-core/target
-          extra_parameters: "--update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
+          target_dir: java/flight/flight-sql
+          extra_parameters: "test surefire:test --update-snapshots -f java/pom.xml -Drat.skip=true -DskipTests=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true"
           context: Artifactory
           requires:
             - Build Flight Core JAR
       - deploy_submodule:
           name: Build Flight JDBC Driver JAR
           submodule: flight-jdbc-driver
-          target_dir: memory/memory-core/target
-          extra_parameters: "--update-snapshots -f java/pom.xml -Drat.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dmaven.site.skip=true"
+          target_dir: java/flight/flight-jdbc-driver
+          extra_parameters: "test surefire:test --update-snapshots -f java/pom.xml -Drat.skip=true -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip=true -Dmaven.site.skip=true"
           context: Artifactory
           requires:
             - Build Flight SQL JAR
