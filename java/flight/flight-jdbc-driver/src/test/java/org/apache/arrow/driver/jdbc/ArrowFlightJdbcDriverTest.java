@@ -111,33 +111,28 @@ public class ArrowFlightJdbcDriverTest {
 
     // statement
     java.sql.Statement stmt = con.createStatement();
-//    stmt.setEscapeProcessing(false); // Avatica not supported
     assertFalse(stmt.isClosed());
     stmt.setFetchSize(100);
     String sql = "create external table customer STORED AS CSV WITH HEADER ROW\n" +
             "    LOCATION '/home/bgardner/workspace/ballista/arrow-datafusion/datafusion/core/tests/tpch-csv/customer.csv';\n";
-    assertFalse(stmt.execute(sql));
+    assertTrue(stmt.execute(sql));
 
     // resultset
     ResultSet rs = stmt.getResultSet();
     assertFalse(rs.isClosed()); // NPE
     ResultSetMetaData md = rs.getMetaData();
     assertNotNull(md);
-    assertEquals(1, md.getColumnCount());
-    assertEquals("", md.getColumnTypeName(1));
-    assertEquals("", md.getColumnType(1));
-    assertEquals("", md.getColumnClassName(1));
-    assertEquals(1, rs.getType());
+    assertEquals(0, md.getColumnCount());
+    assertEquals(1003, rs.getType());
     assertFalse(rs.next());
     assertFalse(rs.isClosed());
     assertFalse(stmt.getMoreResults());
     assertFalse(stmt.isClosed());
     assertNull(con.getWarnings());
     con.clearWarnings();;
-    stmt.close();
 
     int updateCount = stmt.getUpdateCount();
-    assertEquals(updateCount, 0);
+    assertEquals(updateCount, -1);
 
     sql = "select c_name from customer order by c_name limit 1";
     assertTrue(stmt.execute(sql));
