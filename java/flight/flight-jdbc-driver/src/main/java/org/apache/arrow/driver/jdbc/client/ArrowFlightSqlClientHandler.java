@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.net.URI;
 
@@ -103,16 +104,11 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
    * @param flightInfo The {@link FlightInfo} instance from which to fetch results.
    * @return a {@code FlightStream} of results.
    */
-  public List<FlightStream> getStreams(final FlightInfo flightInfo) throws SQLException {
-      ArrayList<org.apache.arrow.flight.FlightStream> streams = new java.util.ArrayList<>();
-      for (FlightEndpoint ep : flightInfo.getEndpoints()) {
-        URI uri = ep.getLocations().isEmpty() ? null : ep.getLocations().get(0).getUri();
-        FlightSqlClient sqlClient = this.factory.createConnection(uri);
-        FlightStream stream = sqlClient.getStream(ep.getTicket(), getOptions());
-        FlightClientCloser closer = new FlightClientCloser(sqlClient, stream);
-        streams.add(closer);
-      }
-      return streams;
+  public List<FlightStream> getStreams(final FlightInfo flightInfo) {
+    return flightInfo.getEndpoints().stream()
+        .map(FlightEndpoint::getTicket)
+        .map(ticket -> sqlClient.getStream(ticket, getOptions()))
+        .collect(Collectors.toList());
   }
 
   /**
