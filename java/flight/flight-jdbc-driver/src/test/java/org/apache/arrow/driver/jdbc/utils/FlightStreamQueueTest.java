@@ -24,7 +24,6 @@ import static org.mockito.Mockito.mock;
 import java.util.concurrent.CompletionService;
 
 import org.apache.arrow.flight.FlightStream;
-import org.apache.arrow.flight.FlightStreamImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -65,7 +64,7 @@ public class FlightStreamQueueTest {
   public void testEnqueueShouldThrowExceptionUponClose() throws Exception {
     queue.close();
     ThrowableAssertionUtils.simpleAssertThrowableClass(IllegalStateException.class,
-        () -> queue.enqueue(mock(FlightStreamImpl.class)));
+        () -> queue.enqueue(mock(FlightStream.class)));
   }
 
   @Test

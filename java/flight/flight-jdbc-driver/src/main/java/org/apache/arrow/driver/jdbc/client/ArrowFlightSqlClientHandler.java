@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.net.URI;
 
-import org.apache.arrow.driver.jdbc.FlightClientCloser;
 import org.apache.arrow.driver.jdbc.client.utils.ClientAuthenticationUtils;
 import org.apache.arrow.flight.CallOption;
 import org.apache.arrow.flight.FlightClient;
