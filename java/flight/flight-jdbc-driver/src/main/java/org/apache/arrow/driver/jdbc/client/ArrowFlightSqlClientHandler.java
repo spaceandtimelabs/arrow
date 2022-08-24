@@ -26,8 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.ArrayList;
-import java.net.URI;
 
 import org.apache.arrow.driver.jdbc.client.utils.ClientAuthenticationUtils;
 import org.apache.arrow.flight.CallOption;
@@ -52,39 +50,30 @@ import org.apache.arrow.util.Preconditions;
 import org.apache.arrow.vector.types.pojo.Schema;
 import org.apache.calcite.avatica.Meta.StatementType;
 
-import static org.apache.arrow.flight.LocationSchemes.GRPC_INSECURE;
-import static org.apache.arrow.flight.LocationSchemes.GRPC_TLS;
-
 /**
  * A {@link FlightSqlClient} handler.
  */
 public final class ArrowFlightSqlClientHandler implements AutoCloseable {
 
-  private final ConnectionFactory factory;
   private final FlightSqlClient sqlClient;
   private final Set<CallOption> options = new HashSet<>();
 
-  ArrowFlightSqlClientHandler(
-      final ConnectionFactory factory,
-      final Collection<CallOption> options
-  ) throws SQLException {
-    this.factory = Preconditions.checkNotNull(factory);
-    this.sqlClient = factory.createConnection(null);
+  ArrowFlightSqlClientHandler(final FlightSqlClient sqlClient,
+                              final Collection<CallOption> options) {
     this.options.addAll(options);
+    this.sqlClient = Preconditions.checkNotNull(sqlClient);
   }
 
   /**
    * Creates a new {@link ArrowFlightSqlClientHandler} from the provided {@code client} and {@code options}.
    *
-   * @param factory the {@link ConnectionFactory} to create {@link FlightSqlClient}s.
+   * @param client  the {@link FlightClient} to manage under a {@link FlightSqlClient} wrapper.
    * @param options the {@link CallOption}s to persist in between subsequent client calls.
    * @return a new {@link ArrowFlightSqlClientHandler}.
    */
-  public static ArrowFlightSqlClientHandler createNewHandler(
-      final ConnectionFactory factory,
-      final Collection<CallOption> options
-  ) throws SQLException {
-    return new ArrowFlightSqlClientHandler(factory, options);
+  public static ArrowFlightSqlClientHandler createNewHandler(final FlightClient client,
+                                                             final Collection<CallOption> options) {
+    return new ArrowFlightSqlClientHandler(new FlightSqlClient(client), options);
   }
 
   /**
@@ -344,30 +333,22 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
   }
 
   /**
-   * Config options shared by both the {@link ArrowFlightSqlClientHandler.Builder}
-   * and the {@link ConnectionFactory}.
-   */
-  static class Config {
-    protected final Set<FlightClientMiddleware.Factory> middlewareFactories = new HashSet<>();
-    protected final Set<CallOption> options = new HashSet<>();
-    protected String host;
-    protected int port;
-    protected String username;
-    protected String password;
-    protected String trustStorePath;
-    protected String trustStorePassword;
-    protected String token;
-    protected boolean useEncryption;
-    protected boolean disableCertificateVerification;
-    protected boolean useSystemTrustStore;
-    protected BufferAllocator allocator;
-  }
-
-  /**
    * Builder for {@link ArrowFlightSqlClientHandler}.
    */
   public static final class Builder {
-    private final Config config = new Config();
+    private final Set<FlightClientMiddleware.Factory> middlewareFactories = new HashSet<>();
+    private final Set<CallOption> options = new HashSet<>();
+    private String host;
+    private int port;
+    private String username;
+    private String password;
+    private String trustStorePath;
+    private String trustStorePassword;
+    private String token;
+    private boolean useEncryption;
+    private boolean disableCertificateVerification;
+    private boolean useSystemTrustStore;
+    private BufferAllocator allocator;
 
     /**
      * Sets the host for this handler.
@@ -376,7 +357,7 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @return this instance.
      */
     public Builder withHost(final String host) {
-      this.config.host = host;
+      this.host = host;
       return this;
     }
 
@@ -387,7 +368,7 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @return this instance.
      */
     public Builder withPort(final int port) {
-      this.config.port = port;
+      this.port = port;
       return this;
     }
 
@@ -398,7 +379,7 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @return this instance.
      */
     public Builder withUsername(final String username) {
-      this.config.username = username;
+      this.username = username;
       return this;
     }
 
@@ -409,7 +390,7 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @return this instance.
      */
     public Builder withPassword(final String password) {
-      this.config.password = password;
+      this.password = password;
       return this;
     }
 
@@ -420,7 +401,7 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @return this instance.
      */
     public Builder withTrustStorePath(final String trustStorePath) {
-      this.config.trustStorePath = trustStorePath;
+      this.trustStorePath = trustStorePath;
       return this;
     }
 
@@ -431,7 +412,7 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @return this instance.
      */
     public Builder withTrustStorePassword(final String trustStorePassword) {
-      this.config.trustStorePassword = trustStorePassword;
+      this.trustStorePassword = trustStorePassword;
       return this;
     }
 
@@ -442,7 +423,7 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @return this instance.
      */
     public Builder withEncryption(final boolean useEncryption) {
-      this.config.useEncryption = useEncryption;
+      this.useEncryption = useEncryption;
       return this;
     }
 
@@ -453,7 +434,7 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @return this instance.
      */
     public Builder withDisableCertificateVerification(final boolean disableCertificateVerification) {
-      this.config.disableCertificateVerification = disableCertificateVerification;
+      this.disableCertificateVerification = disableCertificateVerification;
       return this;
     }
 
@@ -464,7 +445,7 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @return this instance.
      */
     public Builder withSystemTrustStore(final boolean useSystemTrustStore) {
-      this.config.useSystemTrustStore = useSystemTrustStore;
+      this.useSystemTrustStore = useSystemTrustStore;
       return this;
     }
 
@@ -474,7 +455,7 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @return      this builder instance.
      */
     public Builder withToken(final String token) {
-      this.config.token = token;
+      this.token = token;
       return this;
     }
 
@@ -485,13 +466,13 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @return this instance.
      */
     public Builder withBufferAllocator(final BufferAllocator allocator) {
-      this.config.allocator = allocator
+      this.allocator = allocator
           .newChildAllocator("ArrowFlightSqlClientHandler", 0, allocator.getLimit());
       return this;
     }
 
     /**
-     * Adds the provided {@code factories} to the list of middlewareFactories of this handler.
+     * Adds the provided {@code factories} to the list of {@link #middlewareFactories} of this handler.
      *
      * @param factories the factories to add.
      * @return this instance.
@@ -501,14 +482,14 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
     }
 
     /**
-     * Adds the provided {@code factories} to the list of middlewareFactories of this handler.
+     * Adds the provided {@code factories} to the list of {@link #middlewareFactories} of this handler.
      *
      * @param factories the factories to add.
      * @return this instance.
      */
     public Builder withMiddlewareFactories(
         final Collection<FlightClientMiddleware.Factory> factories) {
-      this.config.middlewareFactories.addAll(factories);
+      this.middlewareFactories.addAll(factories);
       return this;
     }
 
@@ -529,7 +510,7 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @return this instance.
      */
     public Builder withCallOptions(final Collection<CallOption> options) {
-      this.config.options.addAll(options);
+      this.options.addAll(options);
       return this;
     }
 
@@ -540,46 +521,19 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
      * @throws SQLException on error.
      */
     public ArrowFlightSqlClientHandler build() throws SQLException {
-      ConnectionFactory factory = new ConnectionFactory(config);
-      return ArrowFlightSqlClientHandler.createNewHandler(factory, config.options);
-    }
-  }
-
-  static class ConnectionFactory {
-    final Config config;
-
-    public ConnectionFactory(Config config) {
-      this.config = config;
-    }
-
-    public FlightSqlClient createConnection(URI uri) throws SQLException {
-      final Set<FlightClientMiddleware.Factory> middlewareFactories = new HashSet<>();
-      middlewareFactories.addAll(config.middlewareFactories);
       FlightClient client = null;
-      String username = config.username;
-      String password = config.password;
       try {
-        // Use default parameters if no URI provided
-        if (uri == null) {
-          String scheme = config.useEncryption ? GRPC_TLS : GRPC_INSECURE;
-          uri = new URI(String.format("%s://%s:%d", scheme, config.host, config.port));
-        }
-  
-        // Create a new connection and add it to the map
-        String host = uri.getHost();
-        int port = uri.getPort();
-        boolean useEncryption = GRPC_TLS.equals(uri.getScheme());
         ClientIncomingAuthHeaderMiddleware.Factory authFactory = null;
         if (username != null) {
           authFactory =
               new ClientIncomingAuthHeaderMiddleware.Factory(new ClientBearerHeaderHandler());
-          middlewareFactories.add(authFactory);
+          withMiddlewareFactories(authFactory);
         }
-        final FlightClient.Builder clientBuilder = FlightClient.builder().allocator(config.allocator);
-        middlewareFactories.add(new ClientCookieMiddleware.Factory());
+        final FlightClient.Builder clientBuilder = FlightClient.builder().allocator(allocator);
+        withMiddlewareFactories(new ClientCookieMiddleware.Factory());
         middlewareFactories.forEach(clientBuilder::intercept);
         Location location;
-        if (config.useEncryption) {
+        if (useEncryption) {
           location = Location.forGrpcTls(host, port);
           clientBuilder.useTls();
         } else {
@@ -588,33 +542,31 @@ public final class ArrowFlightSqlClientHandler implements AutoCloseable {
         clientBuilder.location(location);
 
         if (useEncryption) {
-          if (config.disableCertificateVerification) {
+          if (disableCertificateVerification) {
             clientBuilder.verifyServer(false);
           } else {
-            if (config.useSystemTrustStore) {
+            if (useSystemTrustStore) {
               clientBuilder.trustedCertificates(
-                  ClientAuthenticationUtils.getCertificateInputStreamFromSystem(config.trustStorePassword));
-            } else if (config.trustStorePath != null) {
+                  ClientAuthenticationUtils.getCertificateInputStreamFromSystem(trustStorePassword));
+            } else if (trustStorePath != null) {
               clientBuilder.trustedCertificates(
-                  ClientAuthenticationUtils.getCertificateStream(config.trustStorePath, config.trustStorePassword));
+                  ClientAuthenticationUtils.getCertificateStream(trustStorePath, trustStorePassword));
             }
           }
         }
 
         client = clientBuilder.build();
         if (authFactory != null) {
-          config.options.add(
+          options.add(
               ClientAuthenticationUtils.getAuthenticate(client, username, password, authFactory));
-        } else if (config.token != null) {
-          config.options.add(
+        } else if (token != null) {
+          options.add(
               ClientAuthenticationUtils.getAuthenticate(
-                  client, new CredentialCallOption(new BearerCredentialWriter(config.token))));
+                  client, new CredentialCallOption(new BearerCredentialWriter(token))));
         }
-        FlightSqlClient sqlClient = new FlightSqlClient(client);
-        return sqlClient;
+        return ArrowFlightSqlClientHandler.createNewHandler(client, options);
 
-      } catch (final IllegalArgumentException | GeneralSecurityException | IOException | FlightRuntimeException |
-                     java.net.URISyntaxException e) {
+      } catch (final IllegalArgumentException | GeneralSecurityException | IOException | FlightRuntimeException e) {
         final SQLException originalException = new SQLException(e);
         if (client != null) {
           try {
