@@ -74,6 +74,54 @@ public class ArrowFlightJdbcDriverTest {
     AutoCloseables.close(dataSource, allocator);
   }
 
+  @Test
+  public void testBallista() throws Exception {
+    String url = "jdbc:arrow-flight://localhost:50050";
+    java.util.Properties props = new java.util.Properties();
+    props.setProperty("useEncryption", "false");
+    props.setProperty("user", "admin");
+    props.setProperty("password", "password");
+    Connection con = DriverManager.getConnection(url, props);
+
+    // statement
+    java.sql.Statement stmt = con.createStatement();
+    stmt.setFetchSize(100);
+    String sql = "create external table aggregate_test stored as CSV WITH HEADER ROW LOCATION '/root/aggregate_test_100.csv';\n";
+    assertTrue(stmt.execute(sql));
+
+    // resultset
+    sql = "select c1 from aggregate_test limit 1";
+    assertTrue(stmt.execute(sql));
+    java.sql.ResultSet rs = stmt.getResultSet();
+    int count = 0;
+    while(rs.next()) {
+      String key = rs.getString(1);
+      assertEquals(key, "c");
+      count++;
+    }
+    assertEquals(count, 1);
+  }
+
+  @Test
+  public void testDremio() throws Exception {
+    String sql = "select 'Hello, Dremio';";
+    String url = "jdbc:arrow-flight://localhost:32010";
+    java.util.Properties props = new java.util.Properties();
+    props.setProperty("useEncryption", "false");
+    props.setProperty("user", "dremio");
+    props.setProperty("password", "dremio123");
+    Connection con = DriverManager.getConnection(url, props);
+    java.sql.Statement stmt = con.createStatement();
+    boolean result = stmt.execute(sql);
+    assertEquals(result, true);
+    java.sql.ResultSet rs = stmt.getResultSet();
+    int count = 0;
+    while(rs.next()) {
+      count++;
+    }
+    assertEquals(count, 1);
+  }
+
   /**
    * Tests whether the {@link ArrowFlightJdbcDriver} is registered in the
    * {@link DriverManager}.
