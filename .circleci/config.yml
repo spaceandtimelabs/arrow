@@ -12,11 +12,11 @@ jobs:
       - checkout
       - run: |
           apt-get update
-          apt-get install -y git openjdk-8-jdk maven
+          apt-get install -y git openjdk-8-jdk openjdk-8-jre-headless maven
           git tag circle-$CIRCLE_BUILD_NUM
           git push origin --tags
           cd /root/project/java
-          mvn install -DskipTests -Dcheckstyle.skip -Drat.skip=true -pl :flight-sql-jdbc-driver -am
+          mvn install -DskipTests -Dmaven.test.skip=true -Dmaven.site.skip=true -Dmaven.javadoc.skip=true -Dcheckstyle.skip -Drat.skip=true -pl :flight-sql-jdbc-driver -am
           mkdir -p /root/project/artifacts
       - persist_to_workspace:
           root: /root
