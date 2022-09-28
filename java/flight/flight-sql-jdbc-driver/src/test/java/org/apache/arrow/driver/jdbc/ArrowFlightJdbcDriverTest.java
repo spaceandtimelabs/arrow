@@ -85,7 +85,6 @@ public class ArrowFlightJdbcDriverTest {
 
     // statement
     java.sql.Statement stmt = con.createStatement();
-    stmt.setFetchSize(100);
     String sql = "create external table aggregate_test stored as CSV WITH HEADER ROW LOCATION '/root/aggregate_test_100.csv';\n";
     assertTrue(stmt.execute(sql));
 
