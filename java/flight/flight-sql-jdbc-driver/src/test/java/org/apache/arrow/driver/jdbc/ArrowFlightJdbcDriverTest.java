@@ -203,6 +203,22 @@ public class ArrowFlightJdbcDriverTest {
   }
 
   @Test
+  public void testUpdatePreparedAsQuery() throws Exception {
+    final Driver driver = new ArrowFlightJdbcDriver();
+    Properties props = new Properties();
+    props.setProperty("user", "admin");
+    props.setProperty("password", "password");
+    props.setProperty("useEncryption", "false");
+    String conString = "jdbc:arrow-flight://127.0.0.1:50060";
+    String sql = "create table person (id int, name varchar, primary key(id))";
+    try (Connection con = driver.connect(conString, props); PreparedStatement stmt = con.prepareStatement(sql)) {
+      try {
+        stmt.executeQuery();
+      } catch (Exception ignored) {}
+    }
+  }
+
+  @Test
   public void testUpdatePreparedParams() throws Exception {
     final Driver driver = new ArrowFlightJdbcDriver();
     Properties props = new Properties();
