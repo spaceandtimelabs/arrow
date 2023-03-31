@@ -153,6 +153,115 @@ public class ArrowFlightJdbcDriverTest {
   }
 
   @Test
+  public void testUpdateNotPrepared() throws Exception {
+    final Driver driver = new ArrowFlightJdbcDriver();
+    Properties props = new Properties();
+    props.setProperty("user", "admin");
+    props.setProperty("password", "password");
+    props.setProperty("useEncryption", "false");
+    String conString = "jdbc:arrow-flight://127.0.0.1:50060";
+    try (Connection con = driver.connect(conString, props); Statement stmt = con.createStatement()) {
+      try {
+        stmt.executeUpdate("create table person (id int, name varchar, primary key(id))");
+        stmt.executeUpdate("insert into person (id, name) values (1, 'Brent')");
+      } catch (Exception ignored) {}
+    }
+  }
+
+  @Test
+  public void testQueryNotPrepared() throws Exception {
+    final Driver driver = new ArrowFlightJdbcDriver();
+    Properties props = new Properties();
+    props.setProperty("user", "admin");
+    props.setProperty("password", "password");
+    props.setProperty("useEncryption", "false");
+    String conString = "jdbc:arrow-flight://127.0.0.1:50060";
+    try (Connection con = driver.connect(conString, props); Statement stmt = con.createStatement()) {
+      try {
+        stmt.executeQuery("select 1;");
+      } catch (Exception ignored) {}
+    }
+  }
+
+  @Test
+  public void testUpdatePreparedNoParams() throws Exception {
+    final Driver driver = new ArrowFlightJdbcDriver();
+    Properties props = new Properties();
+    props.setProperty("user", "admin");
+    props.setProperty("password", "password");
+    props.setProperty("useEncryption", "false");
+    String conString = "jdbc:arrow-flight://127.0.0.1:50060";
+    try (Connection con = driver.connect(conString, props); Statement stmt = con.createStatement()) {
+      try {
+        stmt.executeUpdate("create table person (id int, name varchar, primary key(id))");
+      } catch (Exception ignored) {}
+      String sql = "insert into person values (1, 'Brent')";
+      try(PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.executeUpdate();
+      }
+    }
+  }
+
+  @Test
+  public void testUpdatePreparedParams() throws Exception {
+    final Driver driver = new ArrowFlightJdbcDriver();
+    Properties props = new Properties();
+    props.setProperty("user", "admin");
+    props.setProperty("password", "password");
+    props.setProperty("useEncryption", "false");
+    String conString = "jdbc:arrow-flight://127.0.0.1:50060";
+    try (Connection con = driver.connect(conString, props); Statement stmt = con.createStatement()) {
+      try {
+        stmt.executeUpdate("create table person (id int, name varchar, primary key(id))");
+      } catch (Exception ignored) {}
+      String sql = "insert into person values ($1, $2)";
+      try(PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.getParameterMetaData();
+        ps.setInt(1, 1);
+        ps.setString(2, "Brent");
+        ps.executeUpdate();
+      }
+    }
+  }
+
+  @Test
+  public void testQueryPreparedNoParams() throws Exception {
+    final Driver driver = new ArrowFlightJdbcDriver();
+    Properties props = new Properties();
+    props.setProperty("user", "admin");
+    props.setProperty("password", "password");
+    props.setProperty("useEncryption", "false");
+    String conString = "jdbc:arrow-flight://127.0.0.1:50060";
+    try (Connection con = driver.connect(conString, props)) {
+      String sql = "select 1;";
+      try(PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.executeQuery();
+      }
+    }
+  }
+
+  @Test
+  public void testQueryPreparedParams() throws Exception {
+    final Driver driver = new ArrowFlightJdbcDriver();
+    Properties props = new Properties();
+    props.setProperty("user", "admin");
+    props.setProperty("password", "password");
+    props.setProperty("useEncryption", "false");
+    String conString = "jdbc:arrow-flight://127.0.0.1:50060";
+    try (Connection con = driver.connect(conString, props); Statement stmt = con.createStatement()) {
+      try {
+        stmt.executeUpdate("create table person (id int, name varchar, primary key(id))");
+      } catch (Exception ignored) {}
+      String sql = "select * from person where id=$1;";
+      try(PreparedStatement ps = con.prepareStatement(sql)) {
+        ps.getParameterMetaData();
+        ps.setInt(1, 1);
+        ps.executeQuery();
+      }
+    }
+  }
+
+  @Test
   public void testWarehouse() throws Exception {
     final Driver driver = new ArrowFlightJdbcDriver();
     Properties props = new Properties();
